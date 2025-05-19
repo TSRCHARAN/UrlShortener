@@ -1,0 +1,44 @@
+﻿<div class="row">
+    <h2>Get Original Url</h2>
+    <br />
+    <br />
+    <form id="getUrlForm" onsubmit="GetUrl(event)">
+
+        <div class="form-group">
+            <label for="shortUrl">Past Short Url here:</label>
+            <input type="text" id="shortUrl" name="shortUrl">
+        </div>
+        <br />
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <div class="form-group">
+        <label for="originalUrl">Original Url:</label>
+        <input type="text" id="originalUrl" name="originalUrl">
+    </div>
+</div>
+
+<script>
+    function GetUrl(event)
+    {
+        event.preventDefault();
+        const shortUrl = document.getElementById('shortUrl').value;
+        
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("GetOriginalUrlByShortUrl", "GetUrl")',
+            data: { 'shortUrl': shortUrl },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                document.getElementById('originalUrl').value = data.resource;
+            },
+            error: function (xhr, status, error) {
+                location.reload();
+            }
+        });
+
+    }
+</script>

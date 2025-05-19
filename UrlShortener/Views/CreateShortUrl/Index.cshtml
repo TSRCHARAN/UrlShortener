@@ -1,0 +1,91 @@
+﻿@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+<style>
+    body {
+        background-color: #f4f4f4;
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    input[readonly] {
+        background-color: #e9ecef; /* Light grey for read-only input */
+    }
+
+    .copy-icon {
+        cursor: pointer;
+    }
+</style>
+
+<div class="container">
+    <h2>Create Short URL</h2>
+    <form id="getUrlForm" onsubmit="GetUrl(event)">
+        <div class="form-group">
+            <label for="originalUrl">Paste your URL:</label>
+            <input type="text" class="form-control" id="originalUrl" name="originalUrl" placeholder="Enter your long URL here" required>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+
+        <div class="form-group mt-3">
+            <label for="shortUrl">Short URL:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="shortUrl" name="shortUrl" readonly>
+                <div class="input-group-append">
+                    <span class="input-group-text copy-icon" onclick="copyToClipboard()" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<script>
+    function GetUrl(event) {
+        event.preventDefault();
+        const originalUrl = document.getElementById('originalUrl').value;
+
+        // Client-side URL validation
+        const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+.*)$/;
+        if (!urlPattern.test(originalUrl)) {
+            alert("Please enter a valid URL, starting with http:// or https://");
+            return;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("CreateShortUrlByOriginalUrl", "CreateShortUrl")',
+            data: { 'originalUrl': originalUrl },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                if (data.response && data.response.success) {
+                    document.getElementById('shortUrl').value = data.response.resource;
+                } else {
+                    swal({ type: 'error', title: "Error", text: data.response.Message });
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("An error occurred. Please try again.");
+                location.reload();
+            }
+        });
+    }
+
+    function copyToClipboard() {
+        const shortUrlField = document.getElementById('shortUrl');
+        shortUrlField.select();
+        navigator.clipboard.writeText(shortUrlField.value).then(() => {
+            alert("Copied to clipboard: " + shortUrlField.value);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>
